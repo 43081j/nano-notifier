@@ -76,6 +76,20 @@ function run(
   };
 }
 
+function runFixture(scriptPath: string): FixtureResult {
+  const result = spawnSync(process.execPath, [scriptPath], {
+    encoding: 'utf8',
+    cwd: temporaryDirectory,
+    env: getEnvironment(),
+  });
+
+  return {
+    stderr: result.stderr,
+    status: result.status,
+    state: JSON.parse(result.stdout) as FixtureState,
+  };
+}
+
 function runBundled(fixture: string): FixtureResult {
   const bundleDirectory = path.join(temporaryDirectory, 'bundle');
 
@@ -88,21 +102,7 @@ function runBundled(fixture: string): FixtureResult {
     path.join(bundleDirectory, fixture),
   );
 
-  const result = spawnSync(
-    process.execPath,
-    [path.join(bundleDirectory, fixture)],
-    {
-      encoding: 'utf8',
-      cwd: temporaryDirectory,
-      env: getEnvironment(),
-    },
-  );
-
-  return {
-    stderr: result.stderr,
-    status: result.status,
-    state: JSON.parse(result.stdout) as FixtureState,
-  };
+  return runFixture(path.join(bundleDirectory, fixture));
 }
 
 async function frames(output: string): Promise<string[]> {
@@ -206,12 +206,13 @@ describe('notifier', () => {
     expect(await frames(result.stderr)).toMatchSnapshot();
   });
 
-  test('renders a title in the border', async () => {
+  test('hands the default message to a custom renderer', async () => {
     run();
     writeConfig({ ...readConfig(), latestVersion: '2.0.0' });
 
-    const result = run({ notify: { title: 'my-cli' } });
+    const result = runFixture(path.join(fixturesDirectory, 'clack.js'));
 
+    expect(result.state.outdated).toBe(true);
     expect(await frames(result.stderr)).toMatchSnapshot();
   });
 
@@ -297,6 +298,17 @@ describe('notifier', () => {
       fs.chmodSync(temporaryDirectory, 0o500);
 
       const result = run();
+
+      expect(await frames(result.stderr)).toMatchSnapshot();
+    },
+  );
+
+  test.runIf(process.platform !== 'win32')(
+    'hands the store warning to a custom renderer',
+    async () => {
+      fs.chmodSync(temporaryDirectory, 0o500);
+
+      const result = runFixture(path.join(fixturesDirectory, 'clack.js'));
 
       expect(await frames(result.stderr)).toMatchSnapshot();
     },

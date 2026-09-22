@@ -2,105 +2,105 @@
 
 exports[`notifier > checks inline when there is no updater script to spawn 1`] = `
 [
-  "[0;33m┌────────────────────────────────────────┐
-│[0m  Major update available [0;2m1.0.0[0m → [0;32m2.0.0[0m  [0;33m│
-│[0m      Run [0;36mnpm i fake-pkg[0m to update      [0;33m│
-└────────────────────────────────────────┘
-[0m",
+  "
+ [0;33m│[0m Major update available [0;2m1.0.0[0m → [0;32m2.0.0
+[0m [0;33m│[0m Run [0;36mnpm i fake-pkg[0m to update
+",
 ]
 `;
 
 exports[`notifier > describes 1.0.1 as a patch update 1`] = `
 [
-  "[0;33m┌────────────────────────────────────────┐
-│[0m  Patch update available [0;2m1.0.0[0m → [0;32m1.0.1[0m  [0;33m│
-│[0m      Run [0;36mnpm i fake-pkg[0m to update      [0;33m│
-└────────────────────────────────────────┘
-[0m",
+  "
+ [0;33m│[0m Patch update available [0;2m1.0.0[0m → [0;32m1.0.1
+[0m [0;33m│[0m Run [0;36mnpm i fake-pkg[0m to update
+",
 ]
 `;
 
 exports[`notifier > describes 1.1.0 as a minor update 1`] = `
 [
-  "[0;33m┌────────────────────────────────────────┐
-│[0m  Minor update available [0;2m1.0.0[0m → [0;32m1.1.0[0m  [0;33m│
-│[0m      Run [0;36mnpm i fake-pkg[0m to update      [0;33m│
-└────────────────────────────────────────┘
-[0m",
+  "
+ [0;33m│[0m Minor update available [0;2m1.0.0[0m → [0;32m1.1.0
+[0m [0;33m│[0m Run [0;36mnpm i fake-pkg[0m to update
+",
 ]
 `;
 
 exports[`notifier > describes 2.0.0-beta.1 as a premajor update 1`] = `
 [
-  "[0;33m┌────────────────────────────────────────────────────┐
-│[0m  Major prerelease available [0;2m1.0.0[0m → [0;32m2.0.0-beta.1[0m   [0;33m│
-│[0m            Run [0;36mnpm i fake-pkg[0m to update            [0;33m│
-└────────────────────────────────────────────────────┘
-[0m",
+  "
+ [0;33m│[0m Major prerelease available [0;2m1.0.0[0m → [0;32m2.0.0-beta.1
+[0m [0;33m│[0m Run [0;36mnpm i fake-pkg[0m to update
+",
+]
+`;
+
+exports[`notifier > hands the default message to a custom renderer 1`] = `
+[
+  "[0;90m│[0m ┌─fake-pkg───────────────────────────────┐
+[0;90m│[0m │  Major update available [0;2m1.0.0[0m → [0;32m2.0.0[0m  │
+[0;90m│[0m │  Run [0;36mnpm i fake-pkg[0m to update          │
+[0;90m│[0m └────────────────────────────────────────┘
+",
+]
+`;
+
+exports[`notifier > hands the store warning to a custom renderer 1`] = `
+[
+  "[0;90m│[0m ┌─fake-pkg───────────────────────────────────────────────────────────────────┐
+[0;90m│[0m │  [0;33mfake-pkg: update checks are disabled[0m                                      │
+[0;90m│[0m │  The updater couldn't write to its config store.                           │
+[0;90m│[0m │  Take ownership of it via [0;36msudo chown -R $USER:$(id -gn $USER) [0m             │
+[0;90m│[0m │  [0;36m.config/nano-updater[0m                                                      │
+[0;90m│[0m └────────────────────────────────────────────────────────────────────────────┘
+",
 ]
 `;
 
 exports[`notifier > notifies of an update found by a previous run 1`] = `
 [
-  "[0;33m┌────────────────────────────────────────┐
-│[0m  Major update available [0;2m1.0.0[0m → [0;32m2.0.0[0m  [0;33m│
-│[0m      Run [0;36mnpm i fake-pkg[0m to update      [0;33m│
-└────────────────────────────────────────┘
-[0m",
+  "
+ [0;33m│[0m Major update available [0;2m1.0.0[0m → [0;32m2.0.0
+[0m [0;33m│[0m Run [0;36mnpm i fake-pkg[0m to update
+",
 ]
 `;
 
 exports[`notifier > renders a custom message 1`] = `
 [
-  "[0;33m┌────────────────────┐
-│[0m  Time to update!   [0;33m│
-└────────────────────┘
-[0m",
-]
-`;
-
-exports[`notifier > renders a title in the border 1`] = `
-[
-  "[0;33m┌─[0mmy-cli[0;33m─────────────────────────────────┐
-│[0m  Major update available [0;2m1.0.0[0m → [0;32m2.0.0[0m  [0;33m│
-│[0m      Run [0;36mnpm i fake-pkg[0m to update      [0;33m│
-└────────────────────────────────────────┘
-[0m",
+  "
+ [0;33m│[0m Time to update!
+",
 ]
 `;
 
 exports[`notifier > shortens a config store inside the home directory 1`] = `
 [
-  "┌────────────────────────────────────────────────────────────────┐
-│             [0;33m fake-pkg: update checks are disabled [0m             │
-│         The updater couldn't write to its config store.        │
-│                    Take ownership of it via                    │
-│  [0;36m sudo chown -R $USER:$(id -gn $USER) ~/.config/nano-updater [0m  │
-└────────────────────────────────────────────────────────────────┘
-",
+  "
+ [0;33m│[0m [0;33mfake-pkg: update checks are disabled
+[0m [0;33m│[0m The updater couldn't write to its config store.
+ [0;33m│[0m Take ownership of it via [0;36msudo chown -R $USER:$(id -gn $USER) ~/.config/nano-updater
+[0m",
 ]
 `;
 
 exports[`notifier > warns when a found update cannot be consumed 1`] = `
 [
-  "┌──────────────────────────────────────────────────────────────┐
-│            [0;33m fake-pkg: update checks are disabled [0m            │
-│        The updater couldn't write to its config store.       │
-│                   Take ownership of it via                   │
-│  [0;36m sudo chown -R $USER:$(id -gn $USER) .config/nano-updater [0m  │
-└──────────────────────────────────────────────────────────────┘
-",
+  "
+ [0;33m│[0m [0;33mfake-pkg: update checks are disabled
+[0m [0;33m│[0m The updater couldn't write to its config store.
+ [0;33m│[0m Take ownership of it via [0;36msudo chown -R $USER:$(id -gn $USER) .config/nano-updater
+[0m",
 ]
 `;
 
 exports[`notifier > warns when the config store cannot be written to 1`] = `
 [
-  "┌──────────────────────────────────────────────────────────────┐
-│            [0;33m fake-pkg: update checks are disabled [0m            │
-│        The updater couldn't write to its config store.       │
-│                   Take ownership of it via                   │
-│  [0;36m sudo chown -R $USER:$(id -gn $USER) .config/nano-updater [0m  │
-└──────────────────────────────────────────────────────────────┘
-",
+  "
+ [0;33m│[0m [0;33mfake-pkg: update checks are disabled
+[0m [0;33m│[0m The updater couldn't write to its config store.
+ [0;33m│[0m Take ownership of it via [0;36msudo chown -R $USER:$(id -gn $USER) .config/nano-updater
+[0m",
 ]
 `;
