@@ -194,7 +194,7 @@ class Notifier implements NotifierLike {
 Run ${styleText('cyan', installCommand)} to update`;
     const message = options?.message ?? defaultMessage;
 
-    box(message, undefined, {
+    box(message, options?.title, {
       output: process.stderr,
       contentAlign: 'center',
       withGuide: false,
