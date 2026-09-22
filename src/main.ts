@@ -6,7 +6,6 @@ import os from 'node:os';
 import fs from 'node:fs';
 import { styleText } from 'node:util';
 import { difference, isGreaterThan } from 'verkit';
-import { box } from '@clack/prompts';
 import {
   configDirectory,
   defaultCheckInterval,
@@ -39,16 +38,19 @@ const displayedConfigDirectory = configDirectory.startsWith(
 )
   ? path.join('~', configDirectory.slice(homeDirectory.length + 1))
   : configDirectory;
-const unixPermissionHint = `
- The updater couldn't write to its config store.
- Take ownership of it via
-${styleText('cyan', ` sudo chown -R $USER:$(id -gn $USER) ${displayedConfigDirectory} `)}`;
-const windowsPermissionHint = `
- The updater couldn't write to its config store.
- Grant your user write access to
-${styleText('cyan', ` ${displayedConfigDirectory} `)}`;
+const unixPermissionHint = `The updater couldn't write to its config store.
+Take ownership of it via ${styleText('cyan', `sudo chown -R $USER:$(id -gn $USER) ${displayedConfigDirectory}`)}`;
+const windowsPermissionHint = `The updater couldn't write to its config store.
+Grant your user write access to ${styleText('cyan', displayedConfigDirectory)}`;
 const permissionHint =
   process.platform === 'win32' ? windowsPermissionHint : unixPermissionHint;
+
+function renderMessage(message: string): string {
+  const gutter = styleText('yellow', '│');
+  const lines = message.split('\n').map((line) => ` ${gutter} ${line}`);
+  return `\n${lines.join('\n')}\n`;
+}
+
 const updateTypeLabels: Record<VersionDifference, string> = {
   major: 'Major update',
   minor: 'Minor update',
@@ -112,16 +114,15 @@ class Notifier implements NotifierLike {
     }
   }
 
-  #renderStoreUnavailable(): void {
-    const message =
-      styleText('yellow', ` ${this.#name}: update checks are disabled `) +
-      permissionHint;
-    box(message, undefined, {
-      output: process.stderr,
-      contentAlign: 'center',
-      withGuide: false,
-      width: 'auto',
-    });
+  #renderStoreUnavailable(options: NotifyOptions | undefined): void {
+    const message = `${styleText('yellow', `${this.#name}: update checks are disabled`)}\n${permissionHint}`;
+
+    if (options?.onMessage) {
+      options.onMessage(message);
+      return;
+    }
+
+    process.stderr.write(renderMessage(message));
   }
 
   #applyLatest(latestVersion: string): void {
@@ -186,9 +187,9 @@ class Notifier implements NotifierLike {
 
     if (this.#storeUnavailable) {
       if (options?.defer === false) {
-        this.#renderStoreUnavailable();
+        this.#renderStoreUnavailable(options);
       } else {
-        process.on('exit', () => this.#renderStoreUnavailable());
+        process.on('exit', () => this.#renderStoreUnavailable(options));
       }
       return;
     }
@@ -218,16 +219,15 @@ class Notifier implements NotifierLike {
       : 'Update';
     const defaultMessage = `${heading} available ${styleText('dim', this.#version)}${styleText('reset', ' → ')}${styleText('green', latest)}
 Run ${styleText('cyan', installCommand)} to update`;
+
     const message = options?.message ?? defaultMessage;
 
-    box(message, options?.title, {
-      output: process.stderr,
-      contentAlign: 'center',
-      withGuide: false,
-      width: 'auto',
-      formatBorder: (border) => styleText('yellow', border),
-      ...options?.boxOptions,
-    });
+    if (options?.onMessage) {
+      options.onMessage(message);
+      return;
+    }
+
+    process.stderr.write(renderMessage(message));
   }
 }
 

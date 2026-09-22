@@ -1,4 +1,3 @@
-import type { BoxOptions } from '@clack/prompts';
 import type { VersionDifference } from 'verkit';
 
 export interface Config {
@@ -15,9 +14,12 @@ export interface Options {
 
 export interface NotifyOptions {
   message?: string;
-  title?: string;
+  /**
+   * Renders the message rather than letting it be written to stderr. Receives
+   * the custom message if one was given, the default message otherwise.
+   */
+  onMessage?: (message: string) => void;
   defer?: boolean;
-  boxOptions?: Omit<BoxOptions, 'input' | 'signal'>;
 }
 
 export interface NotifierLike {

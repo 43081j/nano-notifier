@@ -3,12 +3,8 @@
 Notifies users of your CLI when an update is available.
 
 ```
-┌────────────────────────────────────────┐
-│                                        │
-│      Update available 1.0.0 → 1.2.0    │
-│    Run npm i -g my-cli to update       │
-│                                        │
-└────────────────────────────────────────┘
+ │ Minor update available 1.0.0 → 1.2.0
+ │ Run npm i -g my-cli to update
 ```
 
 ## Install
@@ -40,12 +36,12 @@ version is available.
 
 ## Options
 
-| Option     | Type     | Default    | Description                            |
-| ---------- | -------- | ---------- | -------------------------------------- |
-| `name`     | `string` | –          | Package name to check on the registry  |
-| `version`  | `string` | –          | Currently installed version            |
-| `distTag`  | `string` | `latest`   | Dist tag to check against              |
-| `interval` | `number` | 1 day (ms) | How often to check for a new version   |
+| Option     | Type     | Default    | Description                           |
+| ---------- | -------- | ---------- | ------------------------------------- |
+| `name`     | `string` | –          | Package name to check on the registry |
+| `version`  | `string` | –          | Currently installed version           |
+| `distTag`  | `string` | `latest`   | Dist tag to check against             |
+| `interval` | `number` | 1 day (ms) | How often to check for a new version  |
 
 ### `notify(options?)`
 
@@ -55,29 +51,40 @@ By default the notification is rendered when your process exits. Pass
 ```js
 instance.notify({
   defer: false,
-  title: 'my-cli',
   message: 'A shiny new version is out!',
 });
 ```
 
-| Option       | Type      | Default | Description                              |
-| ------------ | --------- | ------- | ---------------------------------------- |
-| `message`    | `string`  | –       | Replaces the default update text         |
-| `title`      | `string`  | –       | Title shown in the top border of the box |
-| `defer`      | `boolean` | `true`  | Render on exit rather than immediately   |
-| `boxOptions` | `object`  | –       | Styling for the underlying box           |
+| Option      | Type       | Default | Description                            |
+| ----------- | ---------- | ------- | -------------------------------------- |
+| `message`   | `string`   | –       | Replaces the default update text       |
+| `onMessage` | `function` | –       | Renders the message yourself           |
+| `defer`     | `boolean`  | `true`  | Render on exit rather than immediately |
 
-Styling is done via `boxOptions`, which is passed straight to the underlying
-[`@clack/prompts`](https://github.com/bombshell-dev/clack) box (`width`,
-`rounded`, `contentAlign`, `formatBorder`, and so on).
+### Rendering it yourself
+
+`onMessage` takes over the output, so the notification can go through whichever
+renderer your CLI already uses. It receives your `message` if you set one, the
+default message otherwise:
 
 ```js
+import { box } from '@clack/prompts';
+
 instance.notify({
-  boxOptions: {
-    rounded: false,
-    width: 60,
+  onMessage: (message) => {
+    box(message, 'my-cli', {
+      output: process.stderr,
+      width: 'auto',
+    });
   },
 });
+```
+
+```
+┌─my-cli─────────────────────────────────┐
+│  Minor update available 1.0.0 → 1.2.0  │
+│  Run npm i -g my-cli to update         │
+└────────────────────────────────────────┘
 ```
 
 ### Result
