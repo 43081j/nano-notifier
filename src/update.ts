@@ -3,14 +3,13 @@ import { getConfigFilePath, setConfig } from './config.js';
 import type { Options } from './types.js';
 
 const exitTimeout = 1000 * 30;
+const registry = 'https://registry.npmjs.org';
 
 async function getLatestVersion(
   packageName: string,
   distTag: string = 'latest',
 ): Promise<string> {
-  const response = await fetch(
-    `https://npm.antfu.dev/${packageName}@${distTag}`,
-  );
+  const response = await fetch(`${registry}/${packageName}/${distTag}`);
 
   if (!response.ok) {
     throw new Error(
