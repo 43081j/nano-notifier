@@ -6,11 +6,11 @@ import { styleText } from 'node:util';
 import { difference, isGreaterThan } from 'verkit';
 import { box } from '@clack/prompts';
 import {
+  configDirectory,
   defaultCheckInterval,
   getConfig,
   getConfigFilePath,
   setConfig,
-  xdgConfig,
 } from './config.js';
 import type { VersionDifference } from 'verkit';
 import type { Config, NotifierLike, NotifyOptions, Options } from './types.js';
@@ -29,14 +29,24 @@ const globalNodeModules =
       );
 const isInstalledGlobally = dirname.startsWith(globalNodeModules + path.sep);
 const unixPermissionHint = `
- Try running with ${styleText('cyan', 'sudo')} or get access
- to the local update config store via
-${styleText('cyan', ` sudo chown -R $USER:$(id -gn $USER) ${xdgConfig} `)}`;
+ Take ownership of the update config store via
+${styleText('cyan', ` sudo chown -R $USER:$(id -gn $USER) ${configDirectory} `)}
+ Update checks stay disabled until then`;
 const windowsPermissionHint = `
- Check that you have write access to
-${styleText('cyan', ` ${xdgConfig} `)}`;
+ Grant your user write access to
+${styleText('cyan', ` ${configDirectory} `)}
+ Update checks stay disabled until then`;
 const permissionHint =
   process.platform === 'win32' ? windowsPermissionHint : unixPermissionHint;
+const updateTypeLabels: Record<VersionDifference, string> = {
+  major: 'Major update',
+  minor: 'Minor update',
+  patch: 'Patch update',
+  premajor: 'Major prerelease',
+  preminor: 'Minor prerelease',
+  prepatch: 'Patch prerelease',
+  prerelease: 'Prerelease',
+};
 const isInCi = 'CI' in process.env && process.env.CI !== 'false';
 // Support update-notifier's env variable for cross compat
 const shouldDisable =
@@ -47,11 +57,11 @@ const shouldDisable =
 export * from './types.js';
 
 class Notifier implements NotifierLike {
-  config?: Config;
   latest?: string;
   outdated: boolean = false;
   updateType?: VersionDifference | undefined;
 
+  #config?: Config;
   #configFilePath: string;
   #name: string;
   #version: string;
@@ -71,7 +81,7 @@ class Notifier implements NotifierLike {
     try {
       const config = getConfig(this.#configFilePath) ?? { time: Date.now() };
       setConfig(this.#configFilePath, config);
-      this.config = config;
+      this.#config = config;
     } catch {
       process.on('exit', () => this.#onExit());
     }
@@ -83,8 +93,10 @@ class Notifier implements NotifierLike {
 
   #onExit(): void {
     const message =
-      styleText('yellow', ` ${this.#name} update check failed `) +
-      permissionHint;
+      styleText(
+        'yellow',
+        ` ${this.#name} couldn't save its update check data `,
+      ) + permissionHint;
     box(message, undefined, {
       output: process.stderr,
       contentAlign: 'center',
@@ -93,21 +105,21 @@ class Notifier implements NotifierLike {
   }
 
   check() {
-    if (!this.config) {
+    if (!this.#config) {
       return;
     }
 
-    if (this.config.latestVersion) {
-      this.latest = this.config.latestVersion;
+    if (this.#config.latestVersion) {
+      this.latest = this.#config.latestVersion;
       this.outdated = isGreaterThan(this.latest, this.#version);
       if (this.outdated) {
         this.updateType = difference(this.#version, this.latest) ?? undefined;
       }
-      this.config.latestVersion = undefined;
-      setConfig(this.#configFilePath, this.config);
+      this.#config.latestVersion = undefined;
+      setConfig(this.#configFilePath, this.#config);
     }
 
-    if (Date.now() - this.config.time < this.#interval) {
+    if (Date.now() - this.#config.time < this.#interval) {
       return;
     }
 
@@ -142,7 +154,10 @@ class Notifier implements NotifierLike {
       ? `npm i -g ${this.#name}`
       : `npm i ${this.#name}`;
     const latest = this.latest;
-    const defaultMessage = `Update available ${styleText('dim', this.#version)}${styleText('reset', ' → ')}${styleText('green', latest)}
+    const heading = this.updateType
+      ? updateTypeLabels[this.updateType]
+      : 'Update';
+    const defaultMessage = `${heading} available ${styleText('dim', this.#version)}${styleText('reset', ' → ')}${styleText('green', latest)}
 Run ${styleText('cyan', installCommand)} to update`;
     const message = options?.message ?? defaultMessage;
 
