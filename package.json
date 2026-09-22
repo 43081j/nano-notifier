@@ -22,7 +22,7 @@
     "lint:format": "oxfmt --check src",
     "lint": "npm run lint:js && npm run lint:format",
     "format": "oxfmt --write src",
-    "test": "vitest run"
+    "test": "npm run build && vitest run"
   },
   "keywords": [
     "notifier",
@@ -47,6 +47,7 @@
     "@types/node": "^26.6.2",
     "@typescript/native-preview": "^7.0.0-dev.20260509.2",
     "@vitest/coverage-v8": "^5.0.1",
+    "ansivision": "^0.4.0",
     "oxfmt": "^0.69.0",
     "oxlint": "^1.63.0",
     "vitest": "^5.0.1"

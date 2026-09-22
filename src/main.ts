@@ -2,6 +2,7 @@ import process from 'node:process';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import os from 'node:os';
 import { styleText } from 'node:util';
 import { difference, isGreaterThan } from 'verkit';
 import { box } from '@clack/prompts';
@@ -28,14 +29,20 @@ const globalNodeModules =
         'node_modules',
       );
 const isInstalledGlobally = dirname.startsWith(globalNodeModules + path.sep);
+const homeDirectory = os.homedir();
+const displayedConfigDirectory = configDirectory.startsWith(
+  homeDirectory + path.sep,
+)
+  ? path.join('~', configDirectory.slice(homeDirectory.length + 1))
+  : configDirectory;
 const unixPermissionHint = `
- Take ownership of the update config store via
-${styleText('cyan', ` sudo chown -R $USER:$(id -gn $USER) ${configDirectory} `)}
- Update checks stay disabled until then`;
+ The updater couldn't write to its config store.
+ Take ownership of it via
+${styleText('cyan', ` sudo chown -R $USER:$(id -gn $USER) ${displayedConfigDirectory} `)}`;
 const windowsPermissionHint = `
+ The updater couldn't write to its config store.
  Grant your user write access to
-${styleText('cyan', ` ${configDirectory} `)}
- Update checks stay disabled until then`;
+${styleText('cyan', ` ${displayedConfigDirectory} `)}`;
 const permissionHint =
   process.platform === 'win32' ? windowsPermissionHint : unixPermissionHint;
 const updateTypeLabels: Record<VersionDifference, string> = {
@@ -93,14 +100,13 @@ class Notifier implements NotifierLike {
 
   #onExit(): void {
     const message =
-      styleText(
-        'yellow',
-        ` ${this.#name} couldn't save its update check data `,
-      ) + permissionHint;
+      styleText('yellow', ` ${this.#name}: update checks are disabled `) +
+      permissionHint;
     box(message, undefined, {
       output: process.stderr,
       contentAlign: 'center',
       withGuide: false,
+      width: 'auto',
     });
   }
 
@@ -165,6 +171,7 @@ Run ${styleText('cyan', installCommand)} to update`;
       output: process.stderr,
       contentAlign: 'center',
       withGuide: false,
+      width: 'auto',
       formatBorder: (border) => styleText('yellow', border),
       ...options?.boxOptions,
     });
