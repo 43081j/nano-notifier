@@ -50,5 +50,9 @@
     "oxfmt": "^0.69.0",
     "oxlint": "^1.63.0",
     "vitest": "^5.0.1"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.8.1",
+    "verkit": "^0.5.0"
   }
 }
