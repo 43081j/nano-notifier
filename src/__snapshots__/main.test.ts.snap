@@ -1,5 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`notifier > checks inline when there is no updater script to spawn 1`] = `
+[
+  "[0;33m┌────────────────────────────────────────┐
+│[0m  Major update available [0;2m1.0.0[0m → [0;32m2.0.0[0m  [0;33m│
+│[0m      Run [0;36mnpm i fake-pkg[0m to update      [0;33m│
+└────────────────────────────────────────┘
+[0m",
+]
+`;
+
 exports[`notifier > describes 1.0.1 as a patch update 1`] = `
 [
   "[0;33m┌────────────────────────────────────────┐

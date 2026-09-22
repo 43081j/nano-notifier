@@ -11,6 +11,12 @@ export const configDirectory = path.join(xdgConfig, 'nano-updater');
 
 export const defaultCheckInterval = 1000 * 60 * 60 * 24;
 
+const retryInterval = 1000 * 60 * 60;
+
+export function getRetryTime(interval: number): number {
+  return Date.now() - interval + Math.min(retryInterval, interval);
+}
+
 export function getConfigFilePath(packageName: string): string {
   const fileName = packageName.replaceAll(/[^\w@.-]+/g, '-');
   return path.join(configDirectory, `${fileName}.json`);

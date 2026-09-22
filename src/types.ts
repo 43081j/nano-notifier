@@ -25,6 +25,6 @@ export interface NotifierLike {
   latest?: string;
   outdated: boolean;
   updateType?: VersionDifference | undefined;
-  check(): void;
+  check(): Promise<void>;
   notify(options?: NotifyOptions): void;
 }

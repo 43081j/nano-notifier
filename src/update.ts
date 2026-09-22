@@ -2,29 +2,13 @@ import process from 'node:process';
 import {
   defaultCheckInterval,
   getConfigFilePath,
+  getRetryTime,
   setConfig,
 } from './config.js';
+import { getLatestVersion } from './registry.js';
 import type { Options } from './types.js';
 
 const exitTimeout = 1000 * 30;
-const retryInterval = 1000 * 60 * 60;
-const registry = 'https://registry.npmjs.org';
-
-async function getLatestVersion(
-  packageName: string,
-  distTag: string = 'latest',
-): Promise<string> {
-  const response = await fetch(`${registry}/${packageName}/${distTag}`);
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to resolve ${packageName}@${distTag}: ${response.status}`,
-    );
-  }
-
-  const { version } = (await response.json()) as { version: string };
-  return version;
-}
 
 const [, , rawOptions] = process.argv;
 
@@ -34,6 +18,10 @@ if (!rawOptions) {
 }
 
 const options = JSON.parse(rawOptions) as Options;
+const interval =
+  typeof options.interval === 'number'
+    ? options.interval
+    : defaultCheckInterval;
 
 try {
   setTimeout(process.exit, exitTimeout).unref();
@@ -48,12 +36,8 @@ try {
 } catch (error) {
   console.error(error);
 
-  const interval =
-    typeof options.interval === 'number'
-      ? options.interval
-      : defaultCheckInterval;
   setConfig(getConfigFilePath(options.name), {
-    time: Date.now() - interval + Math.min(retryInterval, interval),
+    time: getRetryTime(interval),
   });
 
   process.exit(1);
