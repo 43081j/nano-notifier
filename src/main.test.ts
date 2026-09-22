@@ -7,7 +7,8 @@ import fs from 'node:fs';
 import type { Config, NotifyOptions, Options } from './types.js';
 
 const projectRoot = path.join(import.meta.dirname, '..');
-const fixturePath = path.join(projectRoot, 'test', 'fixtures', 'notifier.js');
+const fixturesDirectory = path.join(projectRoot, 'test', 'fixtures');
+const fixturePath = path.join(fixturesDirectory, 'notifier.js');
 
 interface FixtureOptions {
   options?: Partial<Options>;
@@ -32,10 +33,9 @@ let temporaryDirectory: string;
 let configDirectory: string;
 let configFilePath: string;
 
-function run(
-  fixtureOptions: FixtureOptions = {},
+function getEnvironment(
   environment: Record<string, string> = {},
-): FixtureResult {
+): Record<string, string> {
   const baseEnvironment = { ...process.env };
 
   // The test run may itself be in CI and is launched by a package manager,
@@ -44,6 +44,19 @@ function run(
   delete baseEnvironment.NO_UPDATE_NOTIFIER;
   delete baseEnvironment.npm_config_user_agent;
 
+  return {
+    ...baseEnvironment,
+    NODE_ENV: 'production',
+    FORCE_COLOR: 'true',
+    XDG_CONFIG_HOME: '.config',
+    ...environment,
+  };
+}
+
+function run(
+  fixtureOptions: FixtureOptions = {},
+  environment: Record<string, string> = {},
+): FixtureResult {
   const result = spawnSync(
     process.execPath,
     [fixturePath, JSON.stringify({ tty: true, ...fixtureOptions })],
@@ -52,13 +65,36 @@ function run(
       // A relative config directory keeps the paths the notifier prints out
       // of the snapshots
       cwd: temporaryDirectory,
-      env: {
-        ...baseEnvironment,
-        NODE_ENV: 'production',
-        FORCE_COLOR: 'true',
-        XDG_CONFIG_HOME: '.config',
-        ...environment,
-      },
+      env: getEnvironment(environment),
+    },
+  );
+
+  return {
+    stderr: result.stderr,
+    status: result.status,
+    state: JSON.parse(result.stdout) as FixtureState,
+  };
+}
+
+function runBundled(fixture: string): FixtureResult {
+  const bundleDirectory = path.join(temporaryDirectory, 'bundle');
+
+  fs.cpSync(path.join(projectRoot, 'lib'), bundleDirectory, {
+    recursive: true,
+    filter: (source) => path.basename(source) !== 'update.js',
+  });
+  fs.copyFileSync(
+    path.join(fixturesDirectory, fixture),
+    path.join(bundleDirectory, fixture),
+  );
+
+  const result = spawnSync(
+    process.execPath,
+    [path.join(bundleDirectory, fixture)],
+    {
+      encoding: 'utf8',
+      cwd: temporaryDirectory,
+      env: getEnvironment(),
     },
   );
 
@@ -177,6 +213,37 @@ describe('notifier', () => {
     const result = run({ notify: { title: 'my-cli' } });
 
     expect(await frames(result.stderr)).toMatchSnapshot();
+  });
+
+  test('checks inline when there is no updater script to spawn', async () => {
+    writeConfig({ time: 0 });
+
+    const result = runBundled('bundled-success.js');
+
+    expect(result.state).toEqual({
+      current: '1.0.0',
+      latest: '2.0.0',
+      outdated: true,
+      updateType: 'major',
+    });
+    // The result is used straight away rather than left for the next run
+    expect(readConfig().latestVersion).toBeUndefined();
+    expect(await frames(result.stderr)).toMatchSnapshot();
+  });
+
+  test('backs off when an inline check fails', () => {
+    const hour = 1000 * 60 * 60;
+    const day = hour * 24;
+    writeConfig({ time: 0 });
+
+    const result = runBundled('bundled-error.js');
+
+    expect(result.state).toEqual({ current: '1.0.0', outdated: false });
+    expect(result.stderr).toBe('');
+
+    const retryDelay = day - (Date.now() - readConfig().time);
+    expect(retryDelay).toBeGreaterThan(hour - 5000);
+    expect(retryDelay).toBeLessThanOrEqual(hour);
   });
 
   test('does not notify without an interactive terminal', () => {

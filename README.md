@@ -22,7 +22,7 @@ npm i nano-updater
 ```js
 import { notifier } from 'nano-updater';
 
-const instance = notifier({
+const instance = await notifier({
   name: 'my-cli',
   version: '1.0.0',
 });
@@ -33,6 +33,10 @@ instance.notify();
 The version check runs in a detached background process to avoid slowing
 down your main thread. The result is displayed on the next run if a new
 version is available.
+
+> NOTE: If you're bundling your CLI, the underlying update script will not
+> be included in the bundle. In that case, the check will happen in-process
+> and the notification will be shown immediately.
 
 ## Options
 

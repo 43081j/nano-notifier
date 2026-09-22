@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import os from 'node:os';
+import fs from 'node:fs';
 import { styleText } from 'node:util';
 import { difference, isGreaterThan } from 'verkit';
 import { box } from '@clack/prompts';
@@ -11,12 +12,15 @@ import {
   defaultCheckInterval,
   getConfig,
   getConfigFilePath,
+  getRetryTime,
   setConfig,
 } from './config.js';
+import { getLatestVersion } from './registry.js';
 import type { VersionDifference } from 'verkit';
 import type { Config, NotifierLike, NotifyOptions, Options } from './types.js';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const updaterPath = path.join(dirname, 'update.js');
 const userAgent = process.env.npm_config_user_agent ?? '';
 const isNpmOrYarn =
   userAgent.startsWith('npm/') || userAgent.startsWith('yarn/');
@@ -120,7 +124,30 @@ class Notifier implements NotifierLike {
     });
   }
 
-  check() {
+  #applyLatest(latestVersion: string): void {
+    this.latest = latestVersion;
+    this.outdated = isGreaterThan(latestVersion, this.#version);
+    if (this.outdated) {
+      this.updateType = difference(this.#version, latestVersion) ?? undefined;
+    }
+  }
+
+  async #checkInline(config: Config): Promise<void> {
+    try {
+      const latestVersion = await getLatestVersion(
+        this.#name,
+        this.#options.distTag,
+      );
+      config.time = Date.now();
+      this.#applyLatest(latestVersion);
+    } catch {
+      config.time = getRetryTime(this.#interval);
+    }
+
+    this.#save(config);
+  }
+
+  async check(): Promise<void> {
     const config = this.#config;
 
     if (!config) {
@@ -128,11 +155,7 @@ class Notifier implements NotifierLike {
     }
 
     if (config.latestVersion) {
-      this.latest = config.latestVersion;
-      this.outdated = isGreaterThan(this.latest, this.#version);
-      if (this.outdated) {
-        this.updateType = difference(this.#version, this.latest) ?? undefined;
-      }
+      this.#applyLatest(config.latestVersion);
       config.latestVersion = undefined;
       this.#save(config);
     } else if (this.#isNewConfig) {
@@ -143,14 +166,17 @@ class Notifier implements NotifierLike {
       return;
     }
 
-    spawn(
-      process.execPath,
-      [path.join(dirname, 'update.js'), JSON.stringify(this.#options)],
-      {
-        detached: true,
-        stdio: 'ignore',
-      },
-    ).unref();
+    // A bundled CLI has no `update.js` alongside it to spawn, so the check
+    // happens in-process instead and its result is used straight away
+    if (!fs.existsSync(updaterPath)) {
+      await this.#checkInline(config);
+      return;
+    }
+
+    spawn(process.execPath, [updaterPath, JSON.stringify(this.#options)], {
+      detached: true,
+      stdio: 'ignore',
+    }).unref();
   }
 
   notify(options?: NotifyOptions): void {
@@ -215,7 +241,7 @@ class NoopNotifier implements NotifierLike {
     this.current = options.version;
   }
 
-  check() {
+  async check() {
     // do nothing
   }
 
@@ -224,12 +250,12 @@ class NoopNotifier implements NotifierLike {
   }
 }
 
-export function notifier(options: Options): NotifierLike {
+export async function notifier(options: Options): Promise<NotifierLike> {
   if (shouldDisable) {
     return new NoopNotifier(options);
   }
 
   const instance = new Notifier(options);
-  instance.check();
+  await instance.check();
   return instance;
 }

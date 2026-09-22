@@ -8,7 +8,11 @@ if (tty) {
 
 const { notifier } = await import('../../lib/main.js');
 
-const instance = notifier({ name: 'fake-pkg', version: '1.0.0', ...options });
+const instance = await notifier({
+  name: 'fake-pkg',
+  version: '1.0.0',
+  ...options,
+});
 
 instance.notify(notify);
 
