@@ -61,36 +61,36 @@ exports[`notifier > renders a title in the border 1`] = `
 
 exports[`notifier > shortens a config store inside the home directory 1`] = `
 [
-  "┌──────────────────────────────────────────────────────────────────┐
-│              [0;33m fake-pkg: update checks are disabled [0m              │
-│          The updater couldn't write to its config store.         │
-│                     Take ownership of it via                     │
-│  [0;36m sudo chown -R $USER:$(id -gn $USER) ~/.config/nano-notifier [0m   │
-└──────────────────────────────────────────────────────────────────┘
+  "┌────────────────────────────────────────────────────────────────┐
+│             [0;33m fake-pkg: update checks are disabled [0m             │
+│         The updater couldn't write to its config store.        │
+│                    Take ownership of it via                    │
+│  [0;36m sudo chown -R $USER:$(id -gn $USER) ~/.config/nano-updater [0m  │
+└────────────────────────────────────────────────────────────────┘
 ",
 ]
 `;
 
 exports[`notifier > warns when a found update cannot be consumed 1`] = `
 [
-  "┌────────────────────────────────────────────────────────────────┐
-│             [0;33m fake-pkg: update checks are disabled [0m             │
-│         The updater couldn't write to its config store.        │
-│                    Take ownership of it via                    │
-│  [0;36m sudo chown -R $USER:$(id -gn $USER) .config/nano-notifier [0m   │
-└────────────────────────────────────────────────────────────────┘
+  "┌──────────────────────────────────────────────────────────────┐
+│            [0;33m fake-pkg: update checks are disabled [0m            │
+│        The updater couldn't write to its config store.       │
+│                   Take ownership of it via                   │
+│  [0;36m sudo chown -R $USER:$(id -gn $USER) .config/nano-updater [0m  │
+└──────────────────────────────────────────────────────────────┘
 ",
 ]
 `;
 
 exports[`notifier > warns when the config store cannot be written to 1`] = `
 [
-  "┌────────────────────────────────────────────────────────────────┐
-│             [0;33m fake-pkg: update checks are disabled [0m             │
-│         The updater couldn't write to its config store.        │
-│                    Take ownership of it via                    │
-│  [0;36m sudo chown -R $USER:$(id -gn $USER) .config/nano-notifier [0m   │
-└────────────────────────────────────────────────────────────────┘
+  "┌──────────────────────────────────────────────────────────────┐
+│            [0;33m fake-pkg: update checks are disabled [0m            │
+│        The updater couldn't write to its config store.       │
+│                   Take ownership of it via                   │
+│  [0;36m sudo chown -R $USER:$(id -gn $USER) .config/nano-updater [0m  │
+└──────────────────────────────────────────────────────────────┘
 ",
 ]
 `;

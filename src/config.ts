@@ -7,7 +7,7 @@ import type { Config } from './types.js';
 export const xdgConfig =
   process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config');
 
-export const configDirectory = path.join(xdgConfig, 'nano-notifier');
+export const configDirectory = path.join(xdgConfig, 'nano-updater');
 
 export const defaultCheckInterval = 1000 * 60 * 60 * 24;
 

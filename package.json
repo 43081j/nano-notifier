@@ -1,5 +1,5 @@
 {
-  "name": "nano-notifier",
+  "name": "nano-updater",
   "version": "0.0.0-dev",
   "description": "Notifiers users of your CLI when an update is available.",
   "main": "./lib/main.js",
@@ -35,13 +35,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/43081j/nano-notifier#readme",
+  "homepage": "https://github.com/43081j/nano-updater#readme",
   "bugs": {
-    "url": "https://github.com/43081j/nano-notifier/issues"
+    "url": "https://github.com/43081j/nano-updater/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/43081j/nano-notifier.git"
+    "url": "git+https://github.com/43081j/nano-updater.git"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",

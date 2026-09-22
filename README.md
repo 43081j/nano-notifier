@@ -1,4 +1,4 @@
-# nano-notifier 🔔
+# nano-updater 🔔
 
 Notifies users of your CLI when an update is available.
 
@@ -14,13 +14,13 @@ Notifies users of your CLI when an update is available.
 ## Install
 
 ```sh
-npm i nano-notifier
+npm i nano-updater
 ```
 
 ## Usage
 
 ```js
-import { notifier } from 'nano-notifier';
+import { notifier } from 'nano-updater';
 
 const instance = notifier({
   name: 'my-cli',
