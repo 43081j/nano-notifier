@@ -146,13 +146,12 @@ class Notifier implements NotifierLike {
 Run ${styleText('cyan', installCommand)} to update`;
     const message = options?.message ?? defaultMessage;
 
-    const { message: _message, defer: _defer, ...boxOptions } = options ?? {};
     box(message, undefined, {
       output: process.stderr,
       contentAlign: 'center',
       withGuide: false,
       formatBorder: (border) => styleText('yellow', border),
-      ...boxOptions,
+      ...options?.boxOptions,
     });
   }
 }

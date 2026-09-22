@@ -1,3 +1,4 @@
+import type { BoxOptions } from '@clack/prompts';
 import type { VersionDifference } from 'verkit';
 
 export interface Config {
@@ -15,13 +16,7 @@ export interface Options {
 export interface NotifyOptions {
   message?: string;
   defer?: boolean;
-  contentAlign?: 'left' | 'center' | 'right';
-  titleAlign?: 'left' | 'center' | 'right';
-  width?: number | 'auto';
-  titlePadding?: number;
-  contentPadding?: number;
-  rounded?: boolean;
-  formatBorder?: (text: string) => string;
+  boxOptions?: Omit<BoxOptions, 'input' | 'signal'>;
 }
 
 export interface NotifierLike {
