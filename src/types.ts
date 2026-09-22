@@ -15,6 +15,7 @@ export interface Options {
 
 export interface NotifyOptions {
   message?: string;
+  title?: string;
   defer?: boolean;
   boxOptions?: Omit<BoxOptions, 'input' | 'signal'>;
 }

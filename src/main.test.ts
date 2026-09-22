@@ -95,6 +95,9 @@ beforeEach(() => {
 
 afterEach(() => {
   fs.chmodSync(temporaryDirectory, 0o700);
+  if (fs.existsSync(configDirectory)) {
+    fs.chmodSync(configDirectory, 0o700);
+  }
   fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 });
 
@@ -167,6 +170,15 @@ describe('notifier', () => {
     expect(await frames(result.stderr)).toMatchSnapshot();
   });
 
+  test('renders a title in the border', async () => {
+    run();
+    writeConfig({ ...readConfig(), latestVersion: '2.0.0' });
+
+    const result = run({ notify: { title: 'my-cli' } });
+
+    expect(await frames(result.stderr)).toMatchSnapshot();
+  });
+
   test('does not notify without an interactive terminal', () => {
     run();
     writeConfig({ ...readConfig(), latestVersion: '2.0.0' });
@@ -219,6 +231,33 @@ describe('notifier', () => {
 
       const result = run();
 
+      expect(await frames(result.stderr)).toMatchSnapshot();
+    },
+  );
+
+  test.runIf(process.platform !== 'win32')(
+    'does not write to a config store which is already up to date',
+    () => {
+      run();
+      fs.chmodSync(configDirectory, 0o500);
+
+      const result = run();
+
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe('');
+    },
+  );
+
+  test.runIf(process.platform !== 'win32')(
+    'warns when a found update cannot be consumed',
+    async () => {
+      run();
+      writeConfig({ ...readConfig(), latestVersion: '2.0.0' });
+      fs.chmodSync(configDirectory, 0o500);
+
+      const result = run();
+
+      expect(result.state.outdated).toBe(true);
       expect(await frames(result.stderr)).toMatchSnapshot();
     },
   );

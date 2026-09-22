@@ -51,9 +51,17 @@ By default the notification is rendered when your process exits. Pass
 ```js
 instance.notify({
   defer: false,
+  title: 'my-cli',
   message: 'A shiny new version is out!',
 });
 ```
+
+| Option       | Type      | Default | Description                              |
+| ------------ | --------- | ------- | ---------------------------------------- |
+| `message`    | `string`  | –       | Replaces the default update text         |
+| `title`      | `string`  | –       | Title shown in the top border of the box |
+| `defer`      | `boolean` | `true`  | Render on exit rather than immediately   |
+| `boxOptions` | `object`  | –       | Styling for the underlying box           |
 
 Styling is done via `boxOptions`, which is passed straight to the underlying
 [`@clack/prompts`](https://github.com/bombshell-dev/clack) box (`width`,
