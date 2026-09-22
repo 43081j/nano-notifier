@@ -1,3 +1,5 @@
+import type { VersionDifference } from 'verkit';
+
 export interface Config {
   time: number;
   latestVersion?: string | undefined;
@@ -26,6 +28,7 @@ export interface NotifierLike {
   current: string;
   latest?: string;
   outdated: boolean;
+  updateType?: VersionDifference | undefined;
   check(): void;
   notify(options?: NotifyOptions): void;
 }

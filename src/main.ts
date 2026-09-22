@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { isGreaterThan } from 'verkit';
+import { difference, isGreaterThan } from 'verkit';
 import { box } from '@clack/prompts';
 import {
   getConfig,
@@ -11,6 +11,7 @@ import {
   setConfig,
   xdgConfig,
 } from './config.js';
+import type { VersionDifference } from 'verkit';
 import type { Config, NotifierLike, NotifyOptions, Options } from './types.js';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -45,10 +46,11 @@ const shouldDisable =
 
 export * from './types.js';
 
-export class Notifier implements NotifierLike {
+class Notifier implements NotifierLike {
   config?: Config;
   latest?: string;
   outdated: boolean = false;
+  updateType?: VersionDifference | undefined;
 
   #configFilePath: string;
   #name: string;
@@ -98,6 +100,9 @@ export class Notifier implements NotifierLike {
     if (this.config.latestVersion) {
       this.latest = this.config.latestVersion;
       this.outdated = isGreaterThan(this.latest, this.#version);
+      if (this.outdated) {
+        this.updateType = difference(this.#version, this.latest) ?? undefined;
+      }
       this.config.latestVersion = undefined;
       setConfig(this.#configFilePath, this.config);
     }
@@ -152,10 +157,11 @@ Run ${styleText('cyan', installCommand)} to update`;
   }
 }
 
-export class NoopNotifier implements NotifierLike {
+class NoopNotifier implements NotifierLike {
   current: string;
   latest?: string;
   outdated: boolean = false;
+  updateType?: VersionDifference;
 
   constructor(options: Options) {
     this.current = options.version;

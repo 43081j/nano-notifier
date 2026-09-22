@@ -22,7 +22,7 @@ async function getLatestVersion(
   return version;
 }
 
-const [, rawOptions] = process.argv;
+const [, , rawOptions] = process.argv;
 
 if (!rawOptions) {
   console.error('Missing options argument');
