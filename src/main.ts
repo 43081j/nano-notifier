@@ -70,6 +70,8 @@ class Notifier implements NotifierLike {
 
   #config?: Config;
   #configFilePath: string;
+  #isNewConfig: boolean = false;
+  #storeUnavailable: boolean = false;
   #name: string;
   #version: string;
   #interval: number;
@@ -86,11 +88,11 @@ class Notifier implements NotifierLike {
     this.#configFilePath = getConfigFilePath(this.#name);
 
     try {
-      const config = getConfig(this.#configFilePath) ?? { time: Date.now() };
-      setConfig(this.#configFilePath, config);
-      this.#config = config;
+      const config = getConfig(this.#configFilePath);
+      this.#config = config ?? { time: Date.now() };
+      this.#isNewConfig = config === undefined;
     } catch {
-      process.on('exit', () => this.#onExit());
+      this.#storeUnavailable = true;
     }
   }
 
@@ -98,7 +100,15 @@ class Notifier implements NotifierLike {
     return this.#version;
   }
 
-  #onExit(): void {
+  #save(config: Config): void {
+    try {
+      setConfig(this.#configFilePath, config);
+    } catch {
+      this.#storeUnavailable = true;
+    }
+  }
+
+  #renderStoreUnavailable(): void {
     const message =
       styleText('yellow', ` ${this.#name}: update checks are disabled `) +
       permissionHint;
@@ -111,21 +121,25 @@ class Notifier implements NotifierLike {
   }
 
   check() {
-    if (!this.#config) {
+    const config = this.#config;
+
+    if (!config) {
       return;
     }
 
-    if (this.#config.latestVersion) {
-      this.latest = this.#config.latestVersion;
+    if (config.latestVersion) {
+      this.latest = config.latestVersion;
       this.outdated = isGreaterThan(this.latest, this.#version);
       if (this.outdated) {
         this.updateType = difference(this.#version, this.latest) ?? undefined;
       }
-      this.#config.latestVersion = undefined;
-      setConfig(this.#configFilePath, this.#config);
+      config.latestVersion = undefined;
+      this.#save(config);
+    } else if (this.#isNewConfig) {
+      this.#save(config);
     }
 
-    if (Date.now() - this.#config.time < this.#interval) {
+    if (Date.now() - config.time < this.#interval) {
       return;
     }
 
@@ -140,7 +154,20 @@ class Notifier implements NotifierLike {
   }
 
   notify(options?: NotifyOptions): void {
-    if (!process.stdout.isTTY || isNpmOrYarn || !this.outdated) {
+    if (!process.stdout.isTTY || isNpmOrYarn) {
+      return;
+    }
+
+    if (this.#storeUnavailable) {
+      if (options?.defer === false) {
+        this.#renderStoreUnavailable();
+      } else {
+        process.on('exit', () => this.#renderStoreUnavailable());
+      }
+      return;
+    }
+
+    if (!this.outdated) {
       return;
     }
 
