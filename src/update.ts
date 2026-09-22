@@ -1,8 +1,13 @@
 import process from 'node:process';
-import { getConfigFilePath, setConfig } from './config.js';
+import {
+  defaultCheckInterval,
+  getConfigFilePath,
+  setConfig,
+} from './config.js';
 import type { Options } from './types.js';
 
 const exitTimeout = 1000 * 30;
+const retryInterval = 1000 * 60 * 60;
 const registry = 'https://registry.npmjs.org';
 
 async function getLatestVersion(
@@ -42,5 +47,14 @@ try {
   process.exit();
 } catch (error) {
   console.error(error);
+
+  const interval =
+    typeof options.interval === 'number'
+      ? options.interval
+      : defaultCheckInterval;
+  setConfig(getConfigFilePath(options.name), {
+    time: Date.now() - interval + Math.min(retryInterval, interval),
+  });
+
   process.exit(1);
 }

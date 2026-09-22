@@ -7,6 +7,8 @@ import type { Config } from './types.js';
 export const xdgConfig =
   process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config');
 
+export const defaultCheckInterval = 1000 * 60 * 60 * 24;
+
 export function getConfigFilePath(packageName: string): string {
   const fileName = packageName.replaceAll(/[^\w@.-]+/g, '-');
   return path.join(xdgConfig, 'nano-notifier', `${fileName}.json`);

@@ -6,6 +6,7 @@ import { styleText } from 'node:util';
 import { difference, isGreaterThan } from 'verkit';
 import { box } from '@clack/prompts';
 import {
+  defaultCheckInterval,
   getConfig,
   getConfigFilePath,
   setConfig,
@@ -15,7 +16,6 @@ import type { VersionDifference } from 'verkit';
 import type { Config, NotifierLike, NotifyOptions, Options } from './types.js';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const defaultCheckInterval = 1000 * 60 * 60 * 24;
 const userAgent = process.env.npm_config_user_agent ?? '';
 const isNpmOrYarn =
   userAgent.startsWith('npm/') || userAgent.startsWith('yarn/');
