@@ -89,7 +89,7 @@ function writeConfig(config: Config): void {
 
 beforeEach(() => {
   temporaryDirectory = fs.mkdtempSync(path.join(projectRoot, '.test-tmp-'));
-  configDirectory = path.join(temporaryDirectory, '.config', 'nano-notifier');
+  configDirectory = path.join(temporaryDirectory, '.config', 'nano-updater');
   configFilePath = path.join(configDirectory, 'fake-pkg.json');
 });
 

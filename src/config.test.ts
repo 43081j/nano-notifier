@@ -53,8 +53,8 @@ describe('xdgConfig', () => {
 });
 
 describe('configDirectory', () => {
-  test('is the nano-notifier directory of the XDG config directory', () => {
-    expect(configDirectory).toBe(path.join(xdgConfig, 'nano-notifier'));
+  test('is the nano-updater directory of the XDG config directory', () => {
+    expect(configDirectory).toBe(path.join(xdgConfig, 'nano-updater'));
   });
 });
 
